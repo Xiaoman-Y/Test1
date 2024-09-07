@@ -1,136 +1,103 @@
-
-// This is where your state machines and game logic lives
-
-
 class Controller {
-
-    // This is the state we start with.
     constructor() {
-        this.gameState = "PLAY";
+      this.gameState = "PLAY";
+      this.startTime = millis(); // 记录游戏开始时间
+      this.lastDropTime = 0; // 记录最后一个gold或rock掉落的时间
     }
-    
-    // This is called from draw() in sketch.js with every frame
+  
     update() {
-
-        // STATE MACHINE ////////////////////////////////////////////////
-        // This is where your game logic lives
-        /////////////////////////////////////////////////////////////////
-        switch(this.gameState) {
-
-            // This is the main game state, where the playing actually happens
-            case "PLAY":
-
-                // clear screen at frame rate so we always start fresh      
-                display.clear();
-            
-                // show all players in the right place, by adding them to display buffer
-                display.setPixel(playerOne.position, playerOne.playerColor);
-                display.setPixel(playerTwo.position, playerTwo.playerColor);
-                
-                
-                // now add the target
-                display.setPixel(target.position, target.playerColor);
-
-                
-                // check if player has caught target
-                if (playerOne.position == target.position)  {
-                    playerOne.score++;              // increment score
-                    this.gameState = "COLLISION";   // go to COLLISION state
-                }
-                
-                // check if other player has caught target        
-                if (playerTwo.position == target.position)  {
-                    playerTwo.score++;              // increment their score
-                    this.gameState = "COLLISION";   // go to COLLISION state
-                }
-
-                break;
-
-            // This state is used to play an animation, after a target has been caught by a player 
-            case "COLLISION":
-                
-                 // clear screen at frame rate so we always start fresh      
-                 display.clear();
-
-                // play explosion animation one frame at a time.
-                // first figure out what frame to show
-                let frameToShow = collisionAnimation.currentFrame();    // this grabs number of current frame and increments it 
-                
-                // then grab every pixel of frame and put it into the display buffer
-                for(let i = 0; i < collisionAnimation.pixels; i++) {
-                    display.setPixel(i,collisionAnimation.animation[frameToShow][i]);                    
-                }
-
-                //check if animation is done and we should move on to another state
-                if (frameToShow == collisionAnimation.animation.length-1)  {
-                    
-                    // We've hit score max, this player wins
-                    if (playerOne.score >= score.max) {
-                        score.winner = playerOne.playerColor;   // store winning color in score.winner
-                        this.gameState = "SCORE";               // go to state that displays score
-                    
-                    // We've hit score max, this player wins
-                    } else if (playerTwo.score >= score.max) {
-                        score.winner = playerTwo.playerColor;   // store winning color in score.winner
-                        this.gameState = "SCORE";               // go to state that displays score
-
-                    // We haven't hit the max score yet, keep playing    
-                    } else {
-                        target.position = parseInt(random(0,displaySize));  // move the target to a new random position
-                        this.gameState = "PLAY";    // back to play state
-                    }
-                } 
-
-                break;
-
-            // Game is over. Show winner and clean everything up so we can start a new game.
-            case "SCORE":       
-            
-                // reset everyone's score
-                playerOne.score = 0;
-                playerTwo.score = 0;
-
-                // put the target somewhere else, so we don't restart the game with player and target in the same place
-                target.position = parseInt(random(1,displaySize));
-
-                //light up w/ winner color by populating all pixels in buffer with their color
-                display.setAllPixels(score.winner);                    
-
-                break;
-
-            // Not used, it's here just for code compliance
-            default:
-                break;
-        }
-    }
-}
-
-
-
-
-// This function gets called when a key on the keyboard is pressed
-function keyPressed() {
-
-    // Move player one to the left if letter A is pressed
-    if (key == 'A' || key == 'a') {
-        playerOne.move(-1);
+      let currentTime = millis();
+  
+      // 如果时间超过60秒，则进入SCORE状态
+      if ((currentTime - this.startTime) > 60000 && this.gameState === "PLAY") {
+        this.gameState = "SCORE";
       }
-    
-    // And so on...
-    if (key == 'D' || key == 'd') {
-    playerOne.move(1);
-    }    
-
-    if (key == 'J' || key == 'j') {
-    playerTwo.move(-1);
-    }
-    
-    if (key == 'L' || key == 'l') {
-    playerTwo.move(1);
-    }
-    
-    // When you press the letter R, the game resets back to the play state
-    if (key == 'R' || key == 'r') {
-    controller.gameState = "PLAY";
+  
+      switch (this.gameState) {
+        case "PLAY":
+          display.clear();
+  
+          // 显示玩家
+          display.setPixel(playerOne.position, playerOne.playerColor);
+          display.setPixel(playerTwo.position, playerTwo.playerColor);
+  
+          // 检查是否需要生成新的 gold 和 rock
+          if ((currentTime - this.lastDropTime) > 2000) { // 每隔2秒掉落
+            let newGoldPos = parseInt(random(0, displaySize));
+            let newRockPos = parseInt(random(0, displaySize));
+  
+            // 确保 gold 和 rock 之间的距离至少为2个像素
+            while (abs(newGoldPos - newRockPos) < 2) {
+              newRockPos = parseInt(random(0, displaySize));
+            }
+  
+            if (golds.length < 10) {
+              golds.push(newGoldPos);
+              console.log(`Gold dropped at position ${newGoldPos}`);
+            }
+            if (rocks.length < 10) {
+              rocks.push(newRockPos);
+              console.log(`Rock dropped at position ${newRockPos}`);
+            }
+  
+            this.lastDropTime = currentTime;  // 更新最后一次掉落的时间
+          }
+  
+          // 显示所有的 gold 和 rock
+          golds.forEach(pos => {
+            display.setPixel(pos, color(255, 255, 0));  // 黄色gold
+          });
+          rocks.forEach(pos => {
+            display.setPixel(pos, color(200, 200, 200));  // 浅灰色rock
+          });
+  
+          // 检查玩家是否碰到 gold 或 rock
+          if (golds.includes(playerOne.position)) {
+            golds = golds.filter(pos => pos !== playerOne.position); // 玩家1碰到gold后移除
+            console.log('Player One collected a gold');
+          }
+          if (rocks.includes(playerTwo.position)) {
+            rocks = rocks.filter(pos => pos !== playerTwo.position); // 玩家2碰到rock后移除
+            console.log('Player Two collected a rock');
+          }
+  
+          break;
+  
+        case "SCORE":
+          playerOne.score = 0;
+          playerTwo.score = 0;
+          target.position = parseInt(random(1, displaySize));
+          display.setAllPixels(score.winner);
+          break;
+  
+        default:
+          break;
+      }
     }
   }
+  
+  function keyPressed() {
+    if (key == 'A' || key == 'a') {
+      playerOne.move(-1);
+    }
+  
+    if (key == 'D' || key == 'd') {
+      playerOne.move(1);
+    }
+  
+    if (key == 'J' || key == 'j') {
+      playerTwo.move(-1);
+    }
+  
+    if (key == 'L' || key == 'l') {
+      playerTwo.move(1);
+    }
+  
+    if (key == 'R' || key == 'r') {
+      controller.gameState = "PLAY";
+      controller.startTime = millis();  // 重置开始时间
+      golds = [];
+      rocks = [];
+    }
+  }
+  

@@ -1,17 +1,18 @@
 /* style.css */
 
 html, body {
-    height: 100%;
-  }
-  
-  body {
-    background-color: #333;
-    margin: 0;
-    display: flex;
-  
-    /* This centers our sketch horizontally. */
-    justify-content: center;
-  
-    /* This centers our sketch vertically. */
-    align-items: center;
-  }
+  height: 100%;
+}
+
+body {
+  background-color: #333;
+  margin: 0;
+  display: flex;
+  justify-content: center;  /* 使画布水平居中 */
+  align-items: center;      /* 使画布垂直居中 */
+}
+
+canvas {
+  display: block;
+  z-index: 10;
+}
