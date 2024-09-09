@@ -48,7 +48,7 @@ class Controller {
             display.setPixel(pos, color(255, 255, 0));  // 黄色gold
           });
           rocks.forEach(pos => {
-            display.setPixel(pos, color(200, 200, 200));  // 浅灰色rock
+            display.setPixel(pos, color(50, 50, 50));  // 浅灰色rock
           });
   
           // 检查玩家是否碰到 gold 或 rock

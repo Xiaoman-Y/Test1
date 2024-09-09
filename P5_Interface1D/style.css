@@ -5,7 +5,7 @@ html, body {
 }
 
 body {
-  background-color: #333;
+  background-color: #ffffff;
   margin: 0;
   display: flex;
   justify-content: center;  /* 使画布水平居中 */

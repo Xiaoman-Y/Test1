@@ -2,7 +2,7 @@ class Display {
   constructor(_displaySize, _pixelSize) {
     this.displaySize = _displaySize;
     this.pixelSize = _pixelSize;
-    this.initColor = color(0, 0, 0);  // 初始化为黑色
+    this.initColor = color(220, 220, 220);  // 初始化为黑色
     this.displayBuffer = [];
 
     // 初始化所有像素为黑色
