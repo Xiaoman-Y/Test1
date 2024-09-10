@@ -13,6 +13,6 @@ body {
 }
 
 canvas {
-  display: block;
+  /* display: block;*/
   z-index: 10;
 }

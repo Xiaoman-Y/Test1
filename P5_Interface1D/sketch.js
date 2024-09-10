@@ -28,7 +28,7 @@ function setup() {
 }
 
 function draw() {
-  background(220,220,220); // 确保背景刷新为黑色
+  background(220,220,220);
   controller.update(); // 更新游戏状态
   display.show(); // 显示当前的像素
 }
